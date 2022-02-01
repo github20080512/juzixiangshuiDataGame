@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      //数据结构  https://www.bilibili.com/video/BV1yD4y127vy?from=search&seid=709398775724670831&spm_id_from=333.337.0.0
+
+      //stack
+      function Stack() {
+        this.items = [];
+      }
+      Stack.prototype.push = function (element) {
+        this.items.push(element);
+      };
+      Stack.prototype.pop = function () {
+        return this.items.pop();
+      };
+      Stack.prototype.peek = function () {
+        return this.items[this.items.length - 1];
+      };
+      Stack.prototype.isEmpty = function () {
+        return this.items.length == 0;
+      };
+      Stack.prototype.size = function () {
+        return this.items.length;
+      };
+      Stack.prototype.toString = function () {
+        var resultStr = "";
+        for (let i = 0; i < this.items.length; i++) {
+          resultStr += this.items[i] + " ";
+        }
+        return resultStr;
+      };
+      // var s=new Stack()
+      // s.push(11)
+      // s.push(122)
+
+      //利用栈结构 十进制 转 二进制
+      function dec2bin(decNumber) {
+        var stack = new Stack();
+        while (decNumber > 0) {
+          stack.push(decNumber % 2);
+          decNumber = Math.floor(decNumber / 2);
+        }
+
+        var binString = "";
+        while (!stack.isEmpty()) {
+          binString += stack.pop();
+        }
+        return binString;
+      }
+
+      //queue
+      function Queue() {
+        this.items = [];
+        Queue.prototype.enqueue = function (element) {
+          this.items.push(element);
+        };
+        Queue.prototype.dequeue = function () {
+          return this.items.shift();
+        };
+        Queue.prototype.front = function () {
+          return this.items[0];
+        };
+        Queue.prototype.isEmpty = function () {
+          return this.items.lenght == 0;
+        };
+        Queue.prototype.size = function () {
+          return this.items.length;
+        };
+        Queue.prototype.toString = function () {
+          var resultStr = "";
+          for (let i = 0; i < this.items.length; i++) {
+            resultStr += this.items[i] + " ";
+          }
+          return resultStr;
+        };
+      }
+      var queue = new Queue();
+      //面试题 击鼓传花
+      var namelist1 = ["lily", "lucy", "tom", "lilei", "why"];
+      function passGame(nameList, num) {
+        var queue = new Queue();
+        for (let i = 0; i < nameList.length; i++) {
+          queue.enqueue(nameList[i]);
+        }
+        console.log(queue);
+
+        while (queue.size() > 1) {
+          for (let i = 0; i < num - 1; i++) {
+            queue.enqueue(queue.dequeue());
+          }
+          queue.dequeue();
+        }
+        var resultName = queue.front();
+
+        alert(resultName);
+        return nameList.indexOf(resultName);
+      }
+      // var res =  passGame(namelist1,3)
+      // console.log(res)
+
+      //优先队列
+      //优先队列
+      //优先队列
+      //优先队列
+
+      function PriorityQueue() {
+        //重新创建了一个类，可以称为内部类
+        function QueueElement(element, priority) {
+          this.element = element;
+          this.priority = priority;
+        }
+        this.items = [];
+        PriorityQueue.prototype.enqueue = function (element, priority) {
+          var queueElement = new QueueElement(element, priority);
+          if (this.items.length == 0) {
+            this.items.push(queueElement);
+          } else {
+            var added = false;
+            for (var i = 0; i < this.items.length; i++) {
+              if (queueElement.priority < this.items[i].priority) {
+                this.items.splice(i, 0, queueElement);
+                added = true;
+                break;
+              }
+            }
+            if (!added) {
+              this.items.push(queueElement);
+            }
+
+            PriorityQueue.prototype.dequeue = function () {
+              return this.items.shift();
+            };
+            PriorityQueue.prototype.front = function () {
+              return this.items[0];
+            };
+            PriorityQueue.prototype.isEmpty = function () {
+              return this.items.lenght == 0;
+            };
+            PriorityQueue.prototype.size = function () {
+              return this.items.length;
+            };
+            PriorityQueue.prototype.toString = function () {
+              var resultStr = "";
+              for (let i = 0; i < this.items.length; i++) {
+                resultStr += this.items[i].element + "-" + this.items[i].priority+" ";
+              }
+              return resultStr;
+            };
+          }
+        };
+      }
+      var pq = new PriorityQueue();
+      pq.enqueue("a",100)
+      pq.enqueue("b",300)
+      pq.enqueue("c",900)
+      pq.enqueue("d",50)
+      pq.enqueue("e",10)
+    </script>
+  </body>
+</html>

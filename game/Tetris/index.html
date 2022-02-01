@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
+    <style>
+      .container {
+        width: 200px;
+        height: 360px;
+        background-color: black;
+        position: relative;
+      }
+
+      .activity-model {
+        width: 20px;
+        height: 20px;
+        background-color: aquamarine;
+        border: 0.3px solid #eeeeee;
+        box-sizing: border-box;
+        position: absolute;
+      }
+
+      .fixed-model {
+        width: 20px;
+        height: 20px;
+        background-color: #fefefe;
+        border: 0.3px solid #333333;
+        box-sizing: border-box;
+        position: absolute;
+      }
+    </style>
+    <script src="./lodash.js"></script>
+  </head>
+
+  <body onload="init()">
+    <div id="container" class="container">
+      <!-- <div class="activity-model"></div> -->
+    </div>
+    <script>
+      var STEP = 20;
+      var ROW_COUNT = 18;
+      var COL_COUNT = 10;
+      var mInterval=null;
+      var MODELS = [
+        {
+          0: {
+            row: 1,
+            col: 1,
+          },
+          1: {
+            row: 1,
+            col: 2,
+          },
+          2: {
+            row: 2,
+            col: 2,
+          },
+          3: {
+            row: 2,
+            col: 3,
+          },
+        },
+
+        {
+          0: {
+            row: 0,
+            col: 0,
+          },
+          1: {
+            row: 0,
+            col: 1,
+          },
+          2: {
+            row: 0,
+            col: 2,
+          },
+          3: {
+            row: 0,
+            col: 3,
+          },
+        },
+
+        {
+          0: {
+            row: 1,
+            col: 1,
+          },
+          1: {
+            row: 2,
+            col: 1,
+          },
+          2: {
+            row: 1,
+            col: 2,
+          },
+          3: {
+            row: 2,
+            col: 2,
+          },
+        },
+
+        {
+          0: {
+            row: 1,
+            col: 1,
+          },
+          1: {
+            row: 0,
+            col: 0,
+          },
+          2: {
+            row: 1,
+            col: 0,
+          },
+          3: {
+            row: 2,
+            col: 0,
+          },
+        },
+
+        //L
+        {
+          0: {
+            row: 2,
+            col: 0,
+          },
+          1: {
+            row: 2,
+            col: 1,
+          },
+          2: {
+            row: 2,
+            col: 2,
+          },
+          3: {
+            row: 1,
+            col: 2,
+          },
+        },
+      ];
+      var currentModel = {};
+      var fixedBlocks = {};
+      var currentX = 0,
+        currentY = 0;
+
+      function init() {
+        console.log(1);
+        createModel();
+       // locationBlocks();
+
+        onkeydown();
+      }
+      function onkeydown() {
+        document.onkeydown = function (event) {
+          switch (event.keyCode) {
+            case 38:
+              rotate();
+              break;
+            case 39:
+              move(1, 0);
+              console.log("right");
+              break;
+            case 40:
+              move(0, 1);
+              console.log("down");
+              break;
+            case 37:
+              move(-1, 0);
+              console.log("left");
+              break;
+          }
+        };
+      }
+      function move(x, y) {
+        // var activityModelEle = document.getElementsByClassName("activity-model")[0]
+        // activityModelEle.style.top = parseInt(activityModelEle.style.top || 0) + y * STEP + "px"
+        // activityModelEle.style.left = parseInt(activityModelEle.style.left || 0) + x * STEP + "px"
+        if (isMeet(currentX + x, currentY + y, currentModel)) {
+          if (y != 0) {
+            fixedBottomModel();
+          }
+          return;
+        }
+        currentX += x;
+        currentY += y;
+        locationBlocks();
+      }
+
+      function createModel() {
+        if(isGameOver()){
+          gameOver()
+          return
+        }
+        currentModel = MODELS[_.random(0,MODELS.length-1)];
+        currentX = 0;
+        currentY = 0;
+        for (var key in currentModel) {
+          var divEle = document.createElement("div");
+          divEle.className = "activity-model";
+          document.getElementById("container").appendChild(divEle);
+        }
+        locationBlocks()
+        autoDown()
+      }
+      function locationBlocks() {
+        checkBound();
+        var eles = document.getElementsByClassName("activity-model");
+        for (let i = 0; i < eles.length; i++) {
+          const activityModelEle = eles[i];
+          var blockModel = currentModel[i];
+          activityModelEle.style.top =
+            (currentY + blockModel.row) * STEP + "px";
+          activityModelEle.style.left =
+            (currentX + blockModel.col) * STEP + "px";
+        }
+      }
+      function rotate() {
+        var cloneCurrentModel = _.cloneDeep(currentModel);
+        for (var key in cloneCurrentModel) {
+          var blockModel = cloneCurrentModel[key];
+          //旋转后的行 = 旋转前的列
+          //旋转后的列 = 3 - 旋转前的行
+          var temp = blockModel.row;
+          blockModel.row = blockModel.col;
+          blockModel.col = 3 - temp;
+        }
+
+        if (isMeet(currentX, currentY, cloneCurrentModel)) {
+          return;
+        }
+        currentModel = cloneCurrentModel;
+
+        locationBlocks();
+      }
+
+      function checkBound() {
+        var leftBound = 0,
+          rightBound = COL_COUNT,
+          bottomBound = ROW_COUNT;
+        for (var key in currentModel) {
+          var blockModel = currentModel[key];
+          if (blockModel.col + currentX < leftBound) {
+            currentX += 1;
+          }
+          if (blockModel.col + currentX > rightBound - 1) {
+            currentX -= 1;
+          }
+          if (blockModel.row + currentY > bottomBound - 1) {
+            currentY -= 1;
+            fixedBottomModel();
+          }
+        }
+      }
+      function fixedBottomModel() {
+        var activityModelEles =
+          document.getElementsByClassName("activity-model");
+        //  for (let i = 0; i < activityModelEles.length; i++)  出错
+        for (let i = activityModelEles.length - 1; i >= 0; i--) {
+          var activityModelEle = activityModelEles[i];
+          activityModelEle.className = "fixed-model";
+          var blockModel = currentModel[i];
+          fixedBlocks[
+            currentY + blockModel.row + "_" + (currentX + blockModel.col)
+          ] = activityModelEle;
+        }
+
+        isRemoveLine();
+        createModel();
+        locationBlocks();
+      }
+
+      function isMeet(x, y, model) {
+        for (var k in model) {
+          var blockModel = model[k];
+          if (fixedBlocks[y + blockModel.row + "_" + (x + blockModel.col)]) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function isRemoveLine() {
+        for (var i = 0; i < ROW_COUNT; i++) {
+          var flag = true;
+          for (var j = 0; j < COL_COUNT; j++) {
+            if (!fixedBlocks[i + "_" + j]) {
+              flag = false;
+              break;
+            }
+          }
+          if (flag) {
+            removeLine(i);
+          }
+        }
+      }
+      function removeLine(line) {
+        for (var i = 0; i < COL_COUNT; i++) {
+          document
+            .getElementById("container")
+            .removeChild(fixedBlocks[line + "_" + i]);
+          fixedBlocks[line + "_" + i] = null;
+        }
+        downLine(line);
+      }
+      function downLine(line) {
+        for (var i = line - 1; i >= 0; i--) {
+          for (var j = 0; j < COL_COUNT; j++) {
+            if (!fixedBlocks[i + "_" + j]) continue;
+            fixedBlocks[i + 1 + "_" + j] = fixedBlocks[i + "_" + j];
+            fixedBlocks[i + 1 + "_" + j].style.top = (i + 1) * STEP + "px";
+            fixedBlocks[i + "_" + j] = null;
+          }
+        }
+      }
+   
+      function autoDown(){
+        if(mInterval){
+          clearInterval(mInterval)
+        }
+        mInterval = setInterval(() => {
+          move(0,1)
+        }, 600);
+      }
+
+      function isGameOver(){
+        for(var i=0;i<COL_COUNT;i++){
+          if(fixedBlocks["0_"+i]){
+            return true
+          }
+          return false;
+        }
+      }
+      function gameOver(){
+        if(mInterval){
+          clearInterval(mInterval);
+        }
+        alert("game over")
+      }
+   </script>
+  </body>
+</html>
